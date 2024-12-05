@@ -1,0 +1,25 @@
+-- AlterTable
+ALTER TABLE `inventory` MODIFY `name` VARCHAR(191) NOT NULL DEFAULT '',
+    MODIFY `category` VARCHAR(191) NOT NULL DEFAULT '',
+    MODIFY `location` VARCHAR(191) NOT NULL DEFAULT '',
+    MODIFY `quantity` INTEGER NOT NULL DEFAULT 0;
+
+-- CreateTable
+CREATE TABLE `borrow` (
+    `borrow_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL DEFAULT 0,
+    `item_id` INTEGER NOT NULL DEFAULT 0,
+    `borrow_date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `return_date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `actual_return_date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`borrow_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `borrow` ADD CONSTRAINT `borrow_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `borrow` ADD CONSTRAINT `borrow_item_id_fkey` FOREIGN KEY (`item_id`) REFERENCES `Inventory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
