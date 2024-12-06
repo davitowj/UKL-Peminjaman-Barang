@@ -7,51 +7,67 @@ const prisma = new PrismaClient({
 
 const createBorrow = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { user_id, item_id } = req.body
-        const borrow_date : Date = new Date(req.body.borrow_date)
-        const return_date : Date = new Date(req.body.return_date)
+        const { user_id, item_id, borrow_date, return_date } = req.body;
 
+        // Cek apakah pengguna ada
         const findUser = await prisma.users.findFirst({
-            where: { id: user_id }
-        })
+            where: { id: user_id },
+        });
 
-        if(!findUser) {
-            res.status(404).json({ 
-                message: "User not found" 
-            })
-            return
+        if (!findUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
         }
 
+        // Cek apakah barang ada
         const findItem = await prisma.inventory.findFirst({
-            where: { id: item_id }
-        })
+            where: { id: item_id },
+        });
 
-        if(!findItem) {
-            res.status(404).json({
-                message: "Item not found"
-            })
-            return
+        if (!findItem) {
+            return res.status(404).json({
+                message: "Item not found",
+            });
         }
 
+        // Cek apakah barang sedang dipinjam
+        const isItemInUse = await prisma.borrow.findFirst({
+            where: {
+                item_id: item_id,
+                borrowReturn: {
+                    none: {}, // Barang belum dikembalikan
+                },
+            },
+        });
+
+        if (isItemInUse) {
+            return res.status(400).json({
+                message: "Item is currently in use and cannot be borrowed.",
+            });
+        }
+
+        // Buat peminjaman baru
         const borrow = await prisma.borrow.create({
             data: {
-                user_id: user_id,
-                item_id: item_id,
-                borrow_date,
-                return_date
-            }
-        })
+                user_id,
+                item_id,
+                borrow_date: new Date(borrow_date),
+                return_date: new Date(return_date),
+            },
+        });
 
         res.status(201).json({
-            status: `succes`,
-            message: `Peminjaman berhasil dicatat`,
-            data: borrow
-        })
+            status: "success",
+            message: "Peminjaman berhasil dicatat.",
+            data: borrow,
+        });
     } catch (error) {
-        res.status(500).json(error)
-        console.log(error)
+        console.error(error);
+        res.status(500).json(error);
     }
-}
+};
+
 
 
 const borrowReturn = async (req: Request, res: Response): Promise<any> => {
